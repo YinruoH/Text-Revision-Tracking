@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文本差异对比工具 by HZC · 26.10.5.01</title>
+<style>
+/* 配色集中在这里；Word 修订的删除/新增颜色由 --delete / --insert 控制。 */
+:root{--delete:#ff0000;--insert:#0000ff;--ink:#162c35;--muted:#63747d;--accent:#087d82;--border:#dce5e8;--page:#f2f6f7;--paper:#fff;--revision-font:"Times New Roman","SimSun","Songti SC",serif}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;font-size:14px}button,select,input,textarea{font:inherit}button,select{cursor:pointer}button{min-height:36px;border:1px solid var(--border);border-radius:7px;padding:7px 13px;background:#fff;color:var(--ink);transition:background .15s,border-color .15s}button:hover:not(:disabled){background:#eef6f6;border-color:#9dbec2}button:disabled{cursor:default;opacity:.45}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #99d7d9;outline-offset:2px}.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.primary:hover:not(:disabled){background:#05686d;border-color:#05686d}.muted{color:var(--muted)}.wrap{max-width:1440px;margin:auto;padding:32px 32px 42px}.header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}.eyebrow{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:8px}h1{font-size:28px;letter-spacing:-.6px;margin:0 0 8px;font-weight:650}.subtitle{margin:0;color:var(--muted);line-height:1.7}.local-badge{white-space:nowrap;border:1px solid #badbd4;border-radius:24px;color:#337463;background:#eaf5ef;padding:8px 12px;font-size:12px}.local-badge:before{content:"";display:inline-block;width:6px;height:6px;background:#46886e;border-radius:50%;margin-right:7px}.panel{background:var(--paper);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 3px 12px #16323b04}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:16px}.input-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border);gap:10px}.input-title{font-weight:650;font-size:15px}.input-title small{font-weight:400;color:var(--muted);font-size:11px;margin-left:9px}.input-actions{display:flex;align-items:center;gap:7px}.input-actions button{min-height:29px;font-size:12px;padding:4px 9px}.dropzone{position:relative;background:white;transition:box-shadow .15s,background .15s}.dropzone.dragging{box-shadow:inset 0 0 0 3px var(--accent);background:#e9f9f8}.dropzone.dragging textarea{background:transparent}.dropzone.dragging:after{content:"松开以读取 .txt 文件";position:absolute;inset:0;display:grid;place-items:center;background:#eaf9f8e8;color:var(--accent);font-size:18px;font-weight:600;pointer-events:none}textarea{display:block;resize:vertical;width:100%;height:242px;min-height:160px;padding:18px;border:0;outline:0;color:#243841;background:transparent;font-size:14px;line-height:1.85;tab-size:4}textarea:focus{box-shadow:inset 0 0 0 2px #99d7d9}textarea::placeholder{color:#99a5ab}.input-foot{padding:10px 18px;border-top:1px solid #edf1f3;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;min-height:36px}.file-info{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0 22px;flex-wrap:wrap}.actions-left,.actions-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.shortcut{color:var(--muted);font-size:12px;margin-left:6px}.status{font-size:12px;color:var(--muted);line-height:1.7;max-width:580px}.status.error{color:#ae2335}.status.warning{color:#94620b}.result-header{padding:17px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}h2{font-size:17px;margin:0}.stats{display:flex;gap:8px}.stat{background:#f6f8f9;border-color:transparent;font-size:12px;display:flex;gap:8px;align-items:center}.stat strong{font-size:18px;font-variant-numeric:tabular-nums}.stat.insert strong{color:var(--insert)}.stat.delete strong{color:var(--delete)}.stat.active{border-color:#b0c8cf;background:#eef4f5}.result-tools{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:15px;flex-wrap:wrap;background:#fafcfc;border-bottom:1px solid var(--border)}.segmented{display:inline-flex;background:#eaf0f2;border-radius:8px;padding:3px;gap:2px}.segmented button{border:0;background:transparent;min-height:31px;font-size:12px;padding:6px 12px}.segmented button.active{background:#fff;box-shadow:0 1px 4px #18334015;color:var(--accent);font-weight:600}.tools-left,.tools-right{display:flex;align-items:center;gap:13px;flex-wrap:wrap}.check{display:flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}.check input{accent-color:var(--accent)}select{padding:6px 8px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:12px;min-height:31px}.navigation{display:flex;align-items:center;gap:5px}.navigation button{padding:4px 9px;min-height:30px}.position{font-size:12px;min-width:60px;text-align:center;font-variant-numeric:tabular-nums;color:var(--muted)}.legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--muted)}.legend .deletion{color:var(--delete)}.legend .addition{color:var(--insert)}.empty{padding:65px 24px;text-align:center;color:var(--muted)}.empty-symbol{margin:auto auto 16px;width:44px;height:48px;border:2px solid #b9ccd1;border-radius:5px;font-size:23px;line-height:42px;color:#9cb7be}.empty strong{display:block;color:#4e646e;font-weight:500;font-size:16px;margin-bottom:8px}.output{padding:20px;background:#edf1f3;min-height:320px}.columns{display:grid;grid-template-columns:1fr 1fr;gap:18px}.columns.merged{display:block;max-width:960px;margin:0 auto}.sheet{background:#fff;min-width:0;box-shadow:0 2px 8px #263a4510;border:1px solid #dbe3e7;align-self:start}.sheet-title{padding:12px 22px;border-bottom:1px solid #edf0f2;font-size:12px;color:var(--muted);font-family:system-ui,sans-serif;display:flex;justify-content:space-between;gap:10px}.document{padding:28px 30px 42px;font-family:var(--revision-font);font-size:17px;line-height:2;color:#000;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;min-height:210px;font-variant-ligatures:none}
+/* Word 风格：删除用单删除线，插入用单下划线；不改变未变文本颜色。 */
+.deletion{color:var(--delete);text-decoration-line:line-through;text-decoration-style:solid;text-decoration-thickness:1px}.addition{color:var(--insert);text-decoration-line:underline;text-decoration-style:solid;text-decoration-thickness:1px;text-underline-offset:3px}.change{cursor:pointer;border-radius:2px;scroll-margin-top:90px}.change.selected{background:#fff0b3;outline:1px solid #e4bd4f;box-shadow:0 0 0 2px #ffedb3}.change.dimmed{opacity:.3}.change.space-change{background:#e9efff}.change.deletion.space-change{background:#ffe7e7}.whitespace-marker{font:11px/1.2 system-ui,sans-serif;color:inherit;border:1px dotted currentColor;padding:0 2px;text-decoration:none;vertical-align:middle;opacity:.8}.excerpt{padding-bottom:17px;margin-bottom:17px;border-bottom:1px dashed #d9e2e6}.excerpt:last-child{border:0;margin:0;padding:0}.excerpt-label{font:11px/1.5 system-ui,sans-serif;color:#80939b;white-space:normal;margin-bottom:8px}.omission{color:#92a0a7;font-family:system-ui,sans-serif;font-size:12px}.result-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 20px;color:var(--muted);font-size:11px;border-top:1px solid var(--border);line-height:1.7}.footer{font-size:11px;color:#82929a;margin-top:17px;text-align:center}.hidden{display:none!important}.stale-tag{font-size:11px;background:#fff5de;color:#976510;border-radius:4px;padding:3px 7px}.spinner{display:inline-block;width:12px;height:12px;border:2px solid #ffffff60;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:7px;vertical-align:-1px}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:760px){.wrap{padding:20px 12px 30px}.header{align-items:flex-start;gap:10px}h1{font-size:23px}.local-badge{font-size:10px;padding:6px 8px;margin-top:5px}.subtitle{font-size:12px}.inputs{grid-template-columns:1fr;gap:12px}textarea{height:170px}.input-head{padding:12px 14px}.input-title small{display:none}.shortcut{display:none}.actions{margin:13px 0 18px}.result-header,.result-tools{padding:13px}.stats{gap:4px}.stat{padding:5px 8px;gap:5px}.stat strong{font-size:16px}.columns{grid-template-columns:1fr}.output{padding:10px}.document{padding:22px 18px 30px;font-size:16px}.legend{gap:10px}.tools-left,.tools-right{gap:9px}.result-footer{padding:12px 14px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.spinner{animation:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+ <header class="header"><div><div class="eyebrow">HZC · TEXT COMPARE</div><h1>文本差异对比工具</h1><p class="subtitle">逐词比对文本，以 Word 修订样式查看每一处改动。</p></div><span class="local-badge">完全离线 · 本地处理</span></header>
+ <section class="inputs" aria-label="待比对文本">
+  <div class="panel"><div class="input-head"><label class="input-title" for="original">原文<small>ORIGINAL</small></label><div class="input-actions"><button type="button" id="openOriginal">导入 TXT</button><button type="button" id="clearOriginal">清空</button></div></div><div class="dropzone" id="dropOriginal"><textarea id="original" placeholder="在此粘贴原文，或将 .txt 文件拖入此区域…" spellcheck="false"></textarea></div><div class="input-foot"><span id="fileOriginal" class="file-info">支持拖入 .txt · 自动识别 UTF-8 / GB18030</span><span id="countOriginal">0 字符</span></div><input class="hidden" type="file" id="pickOriginal" accept=".txt,text/plain"></div>
+  <div class="panel"><div class="input-head"><label class="input-title" for="revised">修订后文本<small>REVISED</small></label><div class="input-actions"><button type="button" id="openRevised">导入 TXT</button><button type="button" id="clearRevised">清空</button></div></div><div class="dropzone" id="dropRevised"><textarea id="revised" placeholder="在此粘贴修订稿，或将 .txt 文件拖入此区域…" spellcheck="false"></textarea></div><div class="input-foot"><span id="fileRevised" class="file-info">支持拖入 .txt · 自动识别 UTF-8 / GB18030</span><span id="countRevised">0 字符</span></div><input class="hidden" type="file" id="pickRevised" accept=".txt,text/plain"></div>
+ </section>
+ <div class="actions"><div class="actions-left"><button class="primary" type="button" id="compare">开始比对</button><button type="button" id="swap">⇄ 交换左右文本</button><button type="button" id="clearAll">全部清空</button><span class="shortcut">Ctrl / ⌘ + Enter</span></div><div id="status" class="status" role="status" aria-live="polite">中文按词语比对，标点独立处理；保留空格与换行差异。</div></div>
+ <section class="panel" id="results" aria-label="比对结果">
+  <div class="result-header"><div style="display:flex;align-items:center;gap:9px"><h2>修订结果</h2><span class="stale-tag hidden" id="stale">文本已修改，需重新比对</span></div><div class="stats"><button type="button" class="stat insert" id="statInsert" aria-label="筛选并跳转到新增差异" aria-pressed="false">新增 <strong id="nInsert">0</strong> 处</button><button type="button" class="stat delete" id="statDelete" aria-label="筛选并跳转到删除差异" aria-pressed="false">删除 <strong id="nDelete">0</strong> 处</button><button type="button" class="stat active" id="statAll" aria-label="显示并跳转到所有差异" aria-pressed="true">合计 <strong id="nAll">0</strong> 处</button></div></div>
+  <div class="result-tools"><div class="tools-left"><div class="segmented" role="group" aria-label="结果视图"><button type="button" id="viewSide" class="active" aria-pressed="true">并排对照</button><button type="button" id="viewMerged" aria-pressed="false">合并修订</button></div><label class="check"><input type="checkbox" id="onlyChanges">仅看差异</label><label class="check"><input type="checkbox" id="showSpaces">显示空白标记</label></div><div class="tools-right"><select id="filter" aria-label="筛选差异"><option value="all">全部差异</option><option value="insert">仅新增</option><option value="delete">仅删除</option></select><div class="navigation"><button type="button" id="previous" aria-label="上一处差异" title="上一处差异（Alt + ↑）">↑</button><span class="position" id="position">0 / 0</span><button type="button" id="next" aria-label="下一处差异" title="下一处差异（Alt + ↓）">↓</button></div><div class="legend"><span class="deletion">删除</span><span class="addition">新增</span><span>未变</span></div></div></div>
+  <div id="empty" class="empty"><div class="empty-symbol" aria-hidden="true">≠</div><strong>准备好两份文本，即可开始</strong><span>也可只填写一侧，查看全文新增或全文删除。</span></div>
+  <div id="output" class="output hidden"></div>
+  <div class="result-footer"><span>一段连续新增或删除计为 1 处；修改按删除 + 新增计为 2 处。</span><span id="timing">手写 Myers 算法 · 原生中文分词 · 无外部依赖</span></div>
+ </section>
+ <footer class="footer">文本差异对比工具 by HZC · 26.10.5.01 · 文本仅在当前浏览器处理</footer>
+</main>
+
+<!-- 此脚本作为 Worker 源码内嵌在单文件中，不产生外部请求。 -->
+<script id="diff-engine" type="text/plain">
+'use strict';
+const HAN = /\p{Script=Han}/u;
+function mergeOps(ops) {
+  const result = [];
+  for (const op of ops) {
+    if (!op.text) continue;
+    const last = result[result.length - 1];
+    if (last && last.type === op.type) last.text += op.text;
+    else result.push({type:op.type,text:op.text});
+  }
+  return result;
+}
+/* 空白完整保留；英文单词、数字、标点各为独立 token。
+   中文使用浏览器内置 Intl.Segmenter（离线词典），旧浏览器退化为逐字。 */
+function tokenize(text, fine = false) {
+  const result = [];
+  const pieces = !fine && typeof Intl.Segmenter === 'function'
+    ? new Intl.Segmenter('zh-CN',{granularity:'word'}).segment(text)
+    : [{segment:text}];
+  for (const piece of pieces) {
+    const matches = piece.segment.match(/\p{Script=Han}+|[\p{L}\p{M}\p{N}_]+|\r\n|\n|\r|[^\S\r\n]+|[^\p{L}\p{M}\p{N}_\s]/gu) || [];
+    for (const token of matches) {
+      if (HAN.test(token) && (fine || typeof Intl.Segmenter !== 'function')) result.push(...Array.from(token));
+      else result.push(token);
+    }
+  }
+  return result;
+}
+/* Myers O((N+M)D) 最短编辑路径，双向中点分割使工作内存为 O(N+M)。
+   使用索引区间避免递归时反复复制数组；先剥离公共前缀/后缀。
+   相同文本/少量修订接近线性；完全不同且无共有 token 的区间直接输出增删。
+   最坏时间仍为二次，但 Worker 隔离计算，不阻塞输入或视图。 */
+function myers(a,b) {
+  const ops = [];
+  function emit(type,arr,l,r) { if(r>l) ops.push({type,text:arr.slice(l,r).join('')}); }
+  function middle(al,ar,bl,br) {
+    const n=ar-al,m=br-bl,max=Math.ceil((n+m)/2),offset=max+1,size=2*max+3;
+    const v1=new Int32Array(size),v2=new Int32Array(size);v1.fill(-1);v2.fill(-1);
+    v1[offset+1]=0;v2[offset+1]=0;
+    const delta=n-m,odd=(delta&1)!==0;
+    let s1=0,e1=0,s2=0,e2=0;
+    for(let d=0;d<=max;d++) {
+      for(let k=-d+s1;k<=d-e1;k+=2) {
+        const at=offset+k;
+        let x=(k===-d || (k!==d && v1[at-1]<v1[at+1]))?v1[at+1]:v1[at-1]+1;
+        let y=x-k;
+        while(x<n && y<m && a[al+x]===b[bl+y]){x++;y++;}
+        v1[at]=x;
+        if(x>n)e1+=2;else if(y>m)s1+=2;
+        else if(odd){const back=offset+delta-k;if(back>=0 && back<size && v2[back]!==-1 && x>=n-v2[back])return [al+x,bl+y];}
+      }
+      for(let k=-d+s2;k<=d-e2;k+=2) {
+        const at=offset+k;
+        let x=(k===-d || (k!==d && v2[at-1]<v2[at+1]))?v2[at+1]:v2[at-1]+1;
+        let y=x-k;
+        while(x<n && y<m && a[ar-x-1]===b[br-y-1]){x++;y++;}
+        v2[at]=x;
+        if(x>n)e2+=2;else if(y>m)s2+=2;
+        else if(!odd){const front=offset+delta-k;if(front>=0 && front<size && v1[front]!==-1 && v1[front]>=n-x){const fx=v1[front];return [al+fx,bl+fx-(delta-k)];}}
+      }
+    }
+    return null;
+  }
+  function solve(al,ar,bl,br) {
+    const prefix=al;
+    while(al<ar && bl<br && a[al]===b[bl]){al++;bl++;}
+    emit('equal',a,prefix,al);
+    let suffix=0;
+    while(al<ar-suffix && bl<br-suffix && a[ar-suffix-1]===b[br-suffix-1])suffix++;
+    const ae=ar-suffix,be=br-suffix,n=ae-al,m=be-bl;
+    if(!n)emit('insert',b,bl,be);
+    else if(!m)emit('delete',a,al,ae);
+    else if(n===1 || m===1) {
+      // 单 token 区间直接求解，避免中点退化及无意义递归。
+      let ai=-1,bi=-1;
+      if(n===1){for(let j=bl;j<be;j++)if(a[al]===b[j]){ai=al;bi=j;break;}}
+      else {for(let i=al;i<ae;i++)if(a[i]===b[bl]){ai=i;bi=bl;break;}}
+      if(ai<0){emit('delete',a,al,ae);emit('insert',b,bl,be);}
+      else{emit('delete',a,al,ai);emit('insert',b,bl,bi);emit('equal',a,ai,ai+1);emit('delete',a,ai+1,ae);emit('insert',b,bi+1,be);}
+    } else {
+      const available=new Set(a.slice(al,ae));
+      let common=false;for(let j=bl;j<be;j++)if(available.has(b[j])){common=true;break;}
+      if(!common){emit('delete',a,al,ae);emit('insert',b,bl,be);}
+      else {
+        const split=middle(al,ae,bl,be);
+        if(!split || (split[0]===al && split[1]===bl) || (split[0]===ae && split[1]===be)){
+          emit('delete',a,al,ae);emit('insert',b,bl,be);
+        }else{solve(al,split[0],bl,split[1]);solve(split[0],ae,split[1],be);}
+      }
+    }
+    emit('equal',a,ae,ar);
+  }
+  solve(0,a.length,0,b.length);
+  return mergeOps(ops);
+}
+function compareTexts(original,revised) {
+  if(original===revised)return {ops:original?[{type:'equal',text:original}]:[],segmented:typeof Intl.Segmenter==='function'};
+  const coarse=myers(tokenize(original),tokenize(revised));
+  const refined=[];
+  // 中文分词可能因上下文变化改变词界。仅在相邻增删区间内逐字细化，
+  // 找回共同汉字；英文仍按完整词处理，不把单词改动拆成零散字母。
+  for(let i=0;i<coarse.length;) {
+    if(coarse[i].type==='equal'){refined.push(coarse[i++]);continue;}
+    let old='',next='';
+    while(i<coarse.length && coarse[i].type!=='equal'){const op=coarse[i++];if(op.type==='delete')old+=op.text;else next+=op.text;}
+    if(old && next && (HAN.test(old)||HAN.test(next)))refined.push(...myers(tokenize(old,true),tokenize(next,true)));
+    else{if(old)refined.push({type:'delete',text:old});if(next)refined.push({type:'insert',text:next});}
+  }
+  // 每个替换区间统一为先删后加，使合并视图接近 Word 习惯。
+  const normalized=mergeOps(refined),ordered=[];
+  for(let i=0;i<normalized.length;) {
+    if(normalized[i].type==='equal'){ordered.push(normalized[i++]);continue;}
+    let old='',next='';while(i<normalized.length && normalized[i].type!=='equal'){const op=normalized[i++];if(op.type==='delete')old+=op.text;else next+=op.text;}
+    if(old)ordered.push({type:'delete',text:old});if(next)ordered.push({type:'insert',text:next});
+  }
+  return {ops:mergeOps(ordered),segmented:typeof Intl.Segmenter==='function'};
+}
+if(typeof self!=='undefined' && typeof document==='undefined') {
+  self.onmessage=({data})=>{
+    try{const start=performance.now();const result=compareTexts(data.original,data.revised);self.postMessage({...result,ms:performance.now()-start});}
+    catch(error){self.postMessage({error:error.message||String(error)});}
+  };
+}
+</script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const state={ops:[],ready:false,view:'side',filter:'all',selected:null,worker:null,job:0,busy:false,elapsed:0};
+const sources=[{key:'Original',id:'original'},{key:'Revised',id:'revised'}];
+const fileJobs={Original:0,Revised:0};
+const countChars=text=>Array.from(text).length;
+const status=(message,kind='')=>{$('status').textContent=message;$('status').className='status '+kind;};
+function setBusy(value){state.busy=value;$('compare').innerHTML=value?'<span class="spinner"></span>正在比对…':'开始比对';$('compare').disabled=value;}
+function cancelJob(){state.job++;if(state.worker){state.worker.terminate();state.worker=null;}setBusy(false);}
+function edited(){cancelJob();for(const s of sources)$('count'+s.key).textContent=countChars($(s.id).value).toLocaleString()+' 字符';if(state.ready){$('stale').classList.remove('hidden');status('输入已变化。当前展示上一次比对结果，点击“开始比对”更新。','warning');}else status('中文按词语比对，标点独立处理；保留空格与换行差异。');}
+function setText(source,text,label){fileJobs[source.key]++;$(source.id).value=text;$('file'+source.key).textContent=label||'手动输入';edited();}
+/* 文件只读取本地字节。支持 UTF-8 BOM、UTF-16 BOM 和常见 GBK/GB18030。 */
+async function importFile(source,file){
+ if(!file)return;
+ if(!/\.txt$/i.test(file.name)){status('请选择或拖入 .txt 文本文件。','error');return;}
+ const ticket=++fileJobs[source.key];
+ try{status('正在读取 '+file.name+'…');const bytes=new Uint8Array(await file.arrayBuffer());let encoding='UTF-8',text;
+  if(bytes[0]===255 && bytes[1]===254){encoding='UTF-16LE';text=new TextDecoder('utf-16le').decode(bytes);}
+  else if(bytes[0]===254 && bytes[1]===255){encoding='UTF-16BE';text=new TextDecoder('utf-16be').decode(bytes);}
+  else{try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch(_){encoding='GB18030';text=new TextDecoder('gb18030',{fatal:true}).decode(bytes);}}
+  if(ticket!==fileJobs[source.key])return;
+  setText(source,text,file.name+' · '+encoding);status('已导入 '+file.name+'（'+encoding+'）。');
+ }catch(error){if(ticket===fileJobs[source.key])status('文件读取失败：'+error.message+'。请将内容复制粘贴到输入框。','error');}
+}
+for(const source of sources){
+ $(source.id).addEventListener('input',()=>{fileJobs[source.key]++;$('file'+source.key).textContent='手动输入';edited();});
+ $('open'+source.key).onclick=()=>{$('pick'+source.key).value='';$('pick'+source.key).click();};
+ $('pick'+source.key).onchange=e=>importFile(source,e.target.files[0]);
+ $('clear'+source.key).onclick=()=>setText(source,'','支持拖入 .txt · 自动识别 UTF-8 / GB18030');
+ const zone=$('drop'+source.key);let depth=0;
+ zone.addEventListener('dragenter',e=>{e.preventDefault();depth++;zone.classList.add('dragging');});
+ zone.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';});
+ zone.addEventListener('dragleave',e=>{e.preventDefault();depth=Math.max(0,depth-1);if(!depth)zone.classList.remove('dragging');});
+ zone.addEventListener('drop',e=>{e.preventDefault();depth=0;zone.classList.remove('dragging');const files=e.dataTransfer.files;if(files.length!==1){status('每个输入区域请一次拖入一个 .txt 文件。','error');return;}importFile(source,files[0]);});
+}
+// 防止文件拖到输入区域外后触发浏览器直接打开文件。
+document.addEventListener('dragover',e=>{if(e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files'))e.preventDefault();});
+document.addEventListener('drop',e=>{if(e.dataTransfer && e.dataTransfer.files.length)e.preventDefault();});
+$('swap').onclick=()=>{const old=$('original').value,label=$('fileOriginal').textContent;setText(sources[0],$('revised').value,$('fileRevised').textContent);setText(sources[1],old,label);};
+$('clearAll').onclick=()=>{for(const s of sources)setText(s,'','支持拖入 .txt · 自动识别 UTF-8 / GB18030');state.ops=[];state.ready=false;state.selected=null;$('stale').classList.add('hidden');$('timing').textContent='手写 Myers 算法 · 原生中文分词 · 无外部依赖';render();status('已清空两侧文本及比对结果。');};
+function matching(){return state.ops.filter(op=>op.type!=='equal' && (state.filter==='all'||op.type===state.filter));}
+function syncControls(){
+ const list=matching(),index=list.findIndex(op=>op.id===state.selected);
+ $('position').textContent=(index<0?0:index+1)+' / '+list.length;
+ $('previous').disabled=$('next').disabled=!list.length;
+ const ins=state.ops.filter(op=>op.type==='insert').length,del=state.ops.filter(op=>op.type==='delete').length;
+ $('nInsert').textContent=ins;$('nDelete').textContent=del;$('nAll').textContent=ins+del;
+ for(const [id,filter] of [['statAll','all'],['statInsert','insert'],['statDelete','delete']]){const active=state.filter===filter;$(id).classList.toggle('active',active);$(id).setAttribute('aria-pressed',active);}
+ for(const [id,view] of [['viewSide','side'],['viewMerged','merged']]){$(id).classList.toggle('active',state.view===view);$(id).setAttribute('aria-pressed',state.view===view);}
+ $('filter').value=state.filter;
+}
+function changeNode(op,text=op.text){
+ const node=document.createElement('span');node.textContent=text;
+ if(op.type==='equal')return node;
+ node.className='change '+(op.type==='delete'?'deletion':'addition');node.dataset.change=op.id;node.tabIndex=0;
+ node.setAttribute('role','button');node.setAttribute('aria-label',(op.type==='delete'?'删除':'新增')+'第 '+(op.order+1)+' 处：'+text.slice(0,80));
+ node.title=(op.type==='delete'?'删除':'新增')+' · '+countChars(text)+' 字符';
+ if(state.filter!=='all' && state.filter!==op.type)node.classList.add('dimmed');
+ if(state.selected===op.id)node.classList.add('selected');
+ if(/^\s+$/.test(text))node.classList.add('space-change');
+ if($('showSpaces').checked){
+  node.textContent='';
+  for(const part of text.split(/(\r\n|\n|\r|\t| +)/g)){
+   if(!part)continue;
+   if(/^\s+$/.test(part)){const mark=document.createElement('span');mark.className='whitespace-marker';mark.textContent=part==='\t'?'⇥':/[\r\n]/.test(part)?(part==='\r\n'?'CRLF ↵':part==='\r'?'CR ↵':'↵'):'·'.repeat(part.length);mark.title=JSON.stringify(part);node.append(mark);if(/[\r\n]/.test(part))node.append(document.createTextNode('\n'));}
+   else node.append(document.createTextNode(part));
+  }
+ }
+ return node;
+}
+function addOps(target,ops,side){for(const op of ops)if(side==='merged'||op.type==='equal'||(side==='original'&&op.type==='delete')||(side==='revised'&&op.type==='insert'))target.append(changeNode(op));}
+function excerptGroups(){
+ const groups=[];
+ for(let i=0;i<state.ops.length;){if(state.ops[i].type==='equal'){i++;continue;}const start=i;while(i<state.ops.length && state.ops[i].type!=='equal')i++;const edits=state.ops.slice(start,i);if(!edits.some(op=>state.filter==='all'||op.type===state.filter))continue;
+  const before=state.ops[start-1],after=state.ops[i],ops=[];
+  if(before){const chars=Array.from(before.text);if(chars.length>60)ops.push({type:'equal',text:'…'});ops.push({type:'equal',text:chars.slice(-60).join('')});}
+  ops.push(...edits);
+  if(after){const chars=Array.from(after.text);ops.push({type:'equal',text:chars.slice(0,60).join('')});if(chars.length>60)ops.push({type:'equal',text:'…'});}
+  groups.push(ops);
+ }
+ return groups;
+}
+function render(){
+ syncControls();$('empty').classList.toggle('hidden',state.ready);$('output').classList.toggle('hidden',!state.ready);
+ if(!state.ready){$('output').replaceChildren();return;}
+ const grid=document.createElement('div');grid.className='columns'+(state.view==='merged'?' merged':'');
+ const groups=$('onlyChanges').checked?excerptGroups():null;
+ for(const side of state.view==='merged'?['merged']:['original','revised']){
+  const sheet=document.createElement('div');sheet.className='sheet';const title=document.createElement('div');title.className='sheet-title';
+  const titleName=document.createElement('span');titleName.textContent=side==='original'?'原文':side==='revised'?'修订后文本':'合并修订稿';const desc=document.createElement('span');desc.textContent=side==='merged'?'删除与新增内嵌显示':side==='original'?'红字删除线':'蓝字下划线';title.append(titleName,desc);
+  const doc=document.createElement('div');doc.className='document';
+  if(groups){if(!groups.length){const note=document.createElement('div');note.className='omission';note.textContent='当前筛选条件下没有差异。';doc.append(note);}else groups.forEach((ops,i)=>{const excerpt=document.createElement('div');excerpt.className='excerpt';const label=document.createElement('div');label.className='excerpt-label';label.textContent='差异片段 '+(i+1)+' · 保留前后各最多 60 字符';excerpt.append(label);addOps(excerpt,ops,side);doc.append(excerpt);});}
+  else addOps(doc,state.ops,side);
+  if(!doc.textContent){const note=document.createElement('span');note.className='omission';note.textContent='（空文本）';doc.append(note);}
+  sheet.append(title,doc);grid.append(sheet);
+ }
+ $('output').replaceChildren(grid);
+}
+function selectChange(id,scroll=true){
+ state.selected=id;for(const node of $('output').querySelectorAll('[data-change]'))node.classList.toggle('selected',Number(node.dataset.change)===id);syncControls();
+ if(scroll){const node=$('output').querySelector('[data-change="'+id+'"]');if(node)node.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});}
+}
+function setFilter(filter,jump=false){state.filter=filter;const list=matching();if(!list.some(op=>op.id===state.selected))state.selected=null;render();if(jump&&list.length)selectChange(list[0].id);}
+function navigate(step){const list=matching();if(!list.length)return;const at=list.findIndex(op=>op.id===state.selected);selectChange(list[(at<0?(step<0?list.length-1:0):(at+step+list.length)%list.length)].id);}
+$('statInsert').onclick=()=>setFilter('insert',true);$('statDelete').onclick=()=>setFilter('delete',true);$('statAll').onclick=()=>setFilter('all',true);
+$('filter').onchange=e=>setFilter(e.target.value,true);
+$('viewSide').onclick=()=>{state.view='side';render();};$('viewMerged').onclick=()=>{state.view='merged';render();};
+$('onlyChanges').onchange=render;$('showSpaces').onchange=render;$('previous').onclick=()=>navigate(-1);$('next').onclick=()=>navigate(1);
+$('output').addEventListener('click',e=>{const node=e.target.closest('[data-change]');if(!node)return;const id=Number(node.dataset.change),op=state.ops.find(op=>op.id===id);if(state.filter!=='all'&&op.type!==state.filter)setFilter('all');selectChange(id,false);});
+$('output').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-change]')){e.preventDefault();e.target.click();}});
+function completed(data,ticket){
+ if(ticket!==state.job)return;
+ if(state.worker){state.worker.terminate();state.worker=null;}setBusy(false);
+ if(data.error){status('比对失败：'+data.error+'。','error');return;}
+ let order=0;state.ops=data.ops.map(op=>op.type==='equal'?op:{...op,id:order,order:order++});state.ready=true;state.selected=null;state.elapsed=data.ms;
+ $('stale').classList.add('hidden');render();
+ const total=state.ops.filter(op=>op.type!=='equal').length;
+ status(total?'比对完成。点击修订标记或统计项，可定位具体差异。':'比对完成，两份文本完全一致。');
+ $('timing').textContent='计算 '+Math.round(data.ms).toLocaleString()+' ms · '+(data.segmented?'中文词语比对 + 局部细化':'逐字中文兼容模式');
+}
+let fallbackEngine=null;
+async function startCompare(){
+ cancelJob();const ticket=state.job,original=$('original').value,revised=$('revised').value;setBusy(true);status('正在分词并计算差异…');
+ const source=$('diff-engine').textContent;
+ // Blob Worker 在 file:// 下可运行；计算与界面分离，支持纯离线双击打开。
+ try{const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));let worker;try{worker=new Worker(url);}finally{URL.revokeObjectURL(url);}state.worker=worker;
+  worker.onmessage=e=>completed(e.data,ticket);
+  worker.onerror=e=>{e.preventDefault();if(ticket!==state.job)return;worker.terminate();state.worker=null;runFallback(source,original,revised,ticket);};
+  worker.postMessage({original,revised});
+ }catch(_){runFallback(source,original,revised,ticket);}
+}
+async function runFallback(source,original,revised,ticket){
+ if(ticket!==state.job)return;
+ status('浏览器未启用本地 Worker，正在使用兼容计算模式…');
+ // 极少数禁用 Worker 的浏览器兼容路径；先让界面绘制状态，再同步计算。
+ await new Promise(resolve=>setTimeout(resolve,30));if(ticket!==state.job)return;
+ try{if(!fallbackEngine)fallbackEngine=new Function(source+'\nreturn compareTexts;')();const begin=performance.now();const data=fallbackEngine(original,revised);completed({...data,ms:performance.now()-begin},ticket);}catch(error){completed({error:error.message},ticket);}
+}
+$('compare').onclick=startCompare;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();if(!state.busy)startCompare();}else if(e.altKey && (e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();navigate(e.key==='ArrowUp'?-1:1);}});
+render();
+</script>
+</body>
+</html>
